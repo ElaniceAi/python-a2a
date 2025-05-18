@@ -59,7 +59,7 @@ class AgentDefinition:
             description: Description of the agent's purpose
             url: URL where the agent is accessible
             agent_source: Source type of the agent
-            agent_type: Type of the agent (a2a, langchain, mcp, etc.)
+            agent_type: Type of the agent (a2a, mcp, etc.)
             config: Configuration parameters for the agent
             created_at: Creation timestamp
             updated_at: Last update timestamp

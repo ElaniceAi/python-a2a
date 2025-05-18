@@ -31,11 +31,9 @@ The A2A protocol establishes a standard communication format that enables AI age
 
 - **Agent Flow UI**: Visual workflow editor for building and managing agent networks with drag-and-drop interface
 - **Agent Discovery**: Built-in support for agent registry and discovery with full Google A2A protocol compatibility
-- **LangChain Integration**: Seamless integration with LangChain's tools and agents
-- **Expanded Tool Ecosystem**: Use tools from both LangChain and MCP in any agent
-- **Enhanced Agent Interoperability**: Convert between A2A agents and LangChain agents
-- **Mixed Workflow Engine**: Build workflows combining both ecosystems
-- **Simplified Agent Development**: Access thousands of pre-built tools instantly
+- **Expanded Tool Ecosystem**: Use tools from MCP in any agent
+- **Enhanced Agent Interoperability**: Improved integration between agent systems
+- **Simplified Agent Development**: Access pre-built tools instantly
 - **Advanced Streaming Architecture**: Enhanced streaming with Server-Sent Events (SSE), better error handling, and robust fallback mechanisms
 - **Task-Based Streaming**: New `tasks_send_subscribe` method for streaming task updates in real-time
 - **Streaming Chunks API**: Improved chunk processing with the `StreamingChunk` class for structured streaming data
@@ -69,7 +67,7 @@ The A2A protocol establishes a standard communication format that enables AI age
 Install the base package with all dependencies:
 
 ```bash
-pip install python-a2a  # Includes LangChain, MCP, and other integrations
+pip install python-a2a  # Includes MCP and other integrations
 ```
 
 Or install with specific components based on your needs:
@@ -446,162 +444,7 @@ a2a network --add weather=http://localhost:5001 travel=http://localhost:5002 --s
 a2a workflow --script research_workflow.py --context initial_data.json
 ```
 
-## 🔄 LangChain Integration (New in v0.5.X)
 
-Python A2A includes built-in LangChain integration, making it easy to combine the best of both ecosystems:
-
-### 1. Converting MCP Tools to LangChain
-
-```python
-from python_a2a.mcp import FastMCP, text_response
-from python_a2a.langchain import to_langchain_tool
-
-# Create MCP server with a tool
-mcp_server = FastMCP(name="Basic Tools", description="Simple utility tools")
-
-@mcp_server.tool(
-    name="calculator",
-    description="Calculate a mathematical expression"
-)
-def calculator(input):
-    """Simple calculator that evaluates an expression."""
-    try:
-        result = eval(input)
-        return text_response(f"Result: {result}")
-    except Exception as e:
-        return text_response(f"Error: {e}")
-
-# Start the server
-import threading, time
-def run_server(server, port):
-    server.run(host="0.0.0.0", port=port)
-server_thread = threading.Thread(target=run_server, args=(mcp_server, 5000), daemon=True)
-server_thread.start()
-time.sleep(2)  # Allow server to start
-
-# Convert MCP tool to LangChain
-calculator_tool = to_langchain_tool("http://localhost:5000", "calculator")
-
-# Use the tool in LangChain
-result = calculator_tool.run("5 * 9 + 3")
-print(f"Result: {result}")
-```
-
-### 2. Converting LangChain Tools to MCP Server
-
-```python
-from langchain.tools import Tool
-from langchain_core.tools import BaseTool
-from python_a2a.langchain import to_mcp_server
-
-# Create LangChain tools
-def calculator(expression: str) -> str:
-    """Evaluate a mathematical expression"""
-    try:
-        result = eval(expression)
-        return f"Result: {expression} = {result}"
-    except Exception as e:
-        return f"Error: {e}"
-
-calculator_tool = Tool(
-    name="calculator",
-    description="Evaluate a mathematical expression",
-    func=calculator
-)
-
-# Convert to MCP server
-mcp_server = to_mcp_server(calculator_tool)
-
-# Run the server
-mcp_server.run(port=5000)
-```
-
-### 3. Converting LangChain Components to A2A Servers
-
-```python
-from langchain_openai import ChatOpenAI
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.prompts import PromptTemplate
-from python_a2a import A2AClient, run_server
-from python_a2a.langchain import to_a2a_server
-
-# Create a LangChain LLM
-llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
-
-# Convert LLM to A2A server
-llm_server = to_a2a_server(llm)
-
-# Create a simple chain
-template = "You are a helpful travel guide.\n\nQuestion: {query}\n\nAnswer:"
-prompt = PromptTemplate.from_template(template)
-travel_chain = prompt | llm | StrOutputParser()
-
-# Convert chain to A2A server
-travel_server = to_a2a_server(travel_chain)
-
-# Run servers in background threads
-import threading
-llm_thread = threading.Thread(
-    target=lambda: run_server(llm_server, port=5001),
-    daemon=True
-)
-llm_thread.start()
-
-travel_thread = threading.Thread(
-    target=lambda: run_server(travel_server, port=5002),
-    daemon=True
-)
-travel_thread.start()
-
-# Test the servers
-llm_client = A2AClient("http://localhost:5001")
-travel_client = A2AClient("http://localhost:5002")
-
-llm_result = llm_client.ask("What is the capital of France?")
-travel_result = travel_client.ask('{"query": "What are some must-see attractions in Paris?"}')
-```
-
-### 4. Converting A2A Agents to LangChain Agents
-
-```python
-from python_a2a.langchain import to_langchain_agent
-
-# Convert A2A agent to LangChain agent
-langchain_agent = to_langchain_agent("http://localhost:5000")
-
-# Use the agent in LangChain
-result = langchain_agent.invoke("What are some famous landmarks in Paris?")
-print(result.get('output', ''))
-
-# Use in a LangChain pipeline
-from langchain_openai import ChatOpenAI
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import StrOutputParser
-
-llm = ChatOpenAI(temperature=0)
-prompt = ChatPromptTemplate.from_template(
-    "Generate a specific, detailed travel question about {destination}."
-)
-
-# Create a pipeline with the converted agent
-chain = (
-    prompt |
-    llm |
-    StrOutputParser() |
-    langchain_agent |
-    (lambda x: f"Travel Info: {x.get('output', '')}")
-)
-
-result = chain.invoke({"destination": "Japan"})
-print(result)
-```
-
-LangChain is automatically installed as a dependency with python-a2a, so everything works right out of the box:
-
-```bash
-pip install python-a2a
-# That's it! LangChain is included automatically
-```
 
 ## 🧩 Core Features
 
@@ -739,7 +582,7 @@ The architecture consists of nine main components:
 - **Server**: Components for building A2A-compatible agents
 - **Discovery**: Registry and discovery mechanisms for agent ecosystems
 - **MCP**: Tools for implementing Model Context Protocol servers and clients
-- **LangChain**: Bridge components for LangChain integration
+
 - **Workflow**: Engine for orchestrating complex agent interactions
 - **Agent Flow**: Visual workflow editor and agent management UI
 - **Utils**: Helper functions for common tasks
@@ -784,7 +627,7 @@ Check out the [`examples/`](https://github.com/themanojdesai/python-a2a/tree/mai
 - Multi-agent customer support systems
 - LLM-powered research assistants with tool access
 - Real-time streaming implementations
-- LangChain integration examples
+
 - MCP server implementations for various tools
 - Workflow orchestration examples
 - Agent network management
@@ -794,7 +637,7 @@ Check out the [`examples/`](https://github.com/themanojdesai/python-a2a/tree/mai
 Here are some related projects in the AI agent and interoperability space:
 
 - [**Google A2A**](https://github.com/google/A2A) - The official Google A2A protocol specification
-- [**LangChain**](https://github.com/langchain-ai/langchain) - Framework for building applications with LLMs
+
 - [**AutoGen**](https://github.com/microsoft/autogen) - Microsoft's framework for multi-agent conversations
 - [**CrewAI**](https://github.com/joaomdmoura/crewAI) - Framework for orchestrating role-playing agents
 - [**MCP**](https://github.com/contextco/mcp) - The Model Context Protocol for tool-using agents
@@ -844,7 +687,7 @@ If you find this library useful, please consider giving it a star on GitHub! It 
 
 - The [Google A2A team](https://github.com/google/A2A) for creating the A2A protocol
 - The [Contextual AI team](https://contextual.ai/) for the Model Context Protocol
-- The [LangChain team](https://github.com/langchain-ai) for their powerful LLM framework
+
 - All our [contributors](https://github.com/themanojdesai/python-a2a/graphs/contributors) for their valuable input
 
 ## 👨‍💻 Author

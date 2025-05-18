@@ -44,7 +44,7 @@ setup(
         "Topic :: Software Development :: Libraries",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
-    keywords="a2a, agent, ai, llm, interoperability, google, protocol, chatbot, openai, anthropic, claude, huggingface, mcp, model-context-protocol, aws-bedrock, langchain",
+    keywords="a2a, agent, ai, llm, interoperability, google, protocol, chatbot, openai, anthropic, claude, huggingface, mcp, model-context-protocol, aws-bedrock",
     python_requires=">=3.9",
     # Include all dependencies by default
     # In setup.py
@@ -71,9 +71,6 @@ setup(
         "fastapi>=0.95.0",
         "uvicorn>=0.21.0",
         "pydantic>=1.10.7",
-
-        # LangChain integration
-        "langchain>=0.1.0",
 
         # Agent Flow UI dependencies
         "flask-cors>=3.0.0",
@@ -120,7 +117,6 @@ setup(
             "uvicorn>=0.21.0",
             "pydantic>=1.10.7",
             "aiohttp>=3.8.0",
-            "langchain>=0.1.0",
         ],
     },
     entry_points={
