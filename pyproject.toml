@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.12,<4.0"
 license = {text = "MIT"}
 authors = [
-    {name = "", email = ""}
+    {name = "Riley Usagi", email = "riley.usagi@gmail.com"}
 ]
 
 # Include all dependencies by default
